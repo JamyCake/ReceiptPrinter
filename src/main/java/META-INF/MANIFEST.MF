@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: com.jamycake.printer.PrinterConsoleRunner
+Class-Path: libfptr10.jar PropertiesProvider.jar
+

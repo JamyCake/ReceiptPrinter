@@ -1,64 +1,47 @@
 package com.jamycake.printer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class ReceiptContentProvider {
-    private static final int BUFFER_SIZE = 2048;
+    private static final int BUFFER_SIZE = 1024;
     private static final char END_OF_FILE = '~';
     private static final String EMPTY_STRING = "";
+    private static final String KOI8R_CHARSET_NAME = "KOI8-R";
+    private final File receipt;
 
-    private String charset;
-    private File receipt;
-
-    public ReceiptContentProvider(final String path) throws FileNotFoundException {
-        this.receipt = new File(path);
-        if (!receipt.exists()) throw new FileNotFoundException(receipt.getAbsolutePath());
-    }
-
-    public void setCharset(String charset) {
-        this.charset = charset;
-    }
-
-    public String getReceiptContent(){
-        try {
-            return encodeToKOI8R();
-        } catch (Exception e) {
-            e.printStackTrace();
+    public ReceiptContentProvider(String path) throws FileNotFoundException {
+        receipt = new File(path);
+        if (!receipt.exists()) {
+            throw new FileNotFoundException(receipt.getAbsolutePath());
         }
-        return null;
+    }
+
+    public String getReceiptContents() throws Exception {
+        return encodeToKOI8R();
     }
 
     private String encodeToKOI8R() throws Exception {
-
-        byte [] rawBytes = readRawBytesFromFile(receipt);
-        String result = getResult(rawBytes);
-        result.replaceAll("\\x00{4,}", EMPTY_STRING);
-        return result;
+        byte[] rawBytes = readRawBytesFromFile(this.receipt);
+        return (new String(rawBytes, KOI8R_CHARSET_NAME))
+                .replaceAll("\\x00{4,}", EMPTY_STRING);
     }
 
-    private String getResult(byte[] rawBytes) throws UnsupportedEncodingException {
-        String result;
-        if (charset != null){
-            result = new String(rawBytes, charset);
-        } else {
-            result = new String(rawBytes);
-        }
-        return result;
-    }
+    private byte[] readRawBytesFromFile(File file) throws IOException {
+        byte[] buffer = new byte[1024];
+        FileInputStream inputStream = new FileInputStream(file);
 
-    private byte[] readRawBytesFromFile(final File file) throws IOException {
-        final byte[] buffer = new byte[BUFFER_SIZE];
-        final FileInputStream inputStream = new FileInputStream(file);
-
-        for (int i = 0; i < BUFFER_SIZE; ++i) {
-            final byte byteValue = (byte) inputStream.read();
+        for(int i = 0; i < BUFFER_SIZE; ++i) {
+            byte byteValue = (byte)inputStream.read();
             if (byteValue == END_OF_FILE) {
                 break;
             }
+
             buffer[i] = byteValue;
         }
 
         return buffer;
     }
-
 }

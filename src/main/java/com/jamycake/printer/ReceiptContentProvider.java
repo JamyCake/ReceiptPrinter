@@ -9,7 +9,7 @@ public class ReceiptContentProvider {
     private static final int BUFFER_SIZE = 1024;
     private static final char END_OF_FILE = '~';
     private static final String EMPTY_STRING = "";
-    private static final String KOI8R_CHARSET_NAME = "KOI8-R";
+    static String CHARSET_NAME = "KOI8-R";
     private final File receipt;
 
     public ReceiptContentProvider(String path) throws FileNotFoundException {
@@ -20,12 +20,12 @@ public class ReceiptContentProvider {
     }
 
     public String getReceiptContents() throws Exception {
-        return encodeToKOI8R();
+        return encodeFromKOI8R();
     }
 
-    private String encodeToKOI8R() throws Exception {
+    private String encodeFromKOI8R() throws Exception {
         byte[] rawBytes = readRawBytesFromFile(this.receipt);
-        return (new String(rawBytes, KOI8R_CHARSET_NAME))
+        return (new String(rawBytes, CHARSET_NAME))
                 .replaceAll("\\x00{4,}", EMPTY_STRING);
     }
 
